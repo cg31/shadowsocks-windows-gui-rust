@@ -1,0 +1,28 @@
+{
+  "select": 1,
+  "autostart": 1,
+  "local_addr": "127.0.0.1:1081",
+  "servers": [
+    {
+      "name": "server-1",
+      "server": "127.0.0.1:1234",
+      "password": "12345",
+      "method": "chacha20-ietf-poly1305",
+      "timeout": 5
+    },
+    {
+      "name": "server-2",
+      "server": "127.0.0.1:2345",
+      "password": "12345",
+      "method": "chacha20-ietf-poly1305",
+      "timeout": 5
+    },
+    {
+      "name": "server-3",
+      "server": "127.0.0.1:4567",
+      "password": "12345",
+      "method": "chacha20-ietf-poly1305",
+      "timeout": 5
+    }
+  ]
+}
