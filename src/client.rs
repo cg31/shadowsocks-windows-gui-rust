@@ -11,6 +11,8 @@ use tokio::sync::Notify;
 
 use shadowsocks_service as ss;
 
+use native_windows_gui as nwg;
+
 use crate::config;
 use crate::utils;
 
@@ -20,6 +22,7 @@ pub struct Client {
     pub config: config::Config,
     pub notify: Arc<Notify>,
     pub th: Option<thread::JoinHandle<()>>,
+    pub handle: nwg::ControlHandle,
 }
 
 impl Client {
@@ -33,6 +36,7 @@ impl Client {
             config: cfg,
             notify: Arc::new(Notify::new()),
             th: None,
+            handle: nwg::ControlHandle::NoHandle,
         };
 
         data

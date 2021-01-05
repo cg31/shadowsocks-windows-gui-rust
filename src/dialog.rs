@@ -5,9 +5,13 @@ use native_windows_derive as nwd;
 use nwg::NativeUi;
 use nwd::NwgUi;
 
-use winapi::um::winuser::{SendMessageW, SetForegroundWindow};
-use winapi::um::commctrl::{LVM_SETCOLUMNWIDTH};
+use std::{mem, ptr};
 
+use winapi::um::winuser::{GetMessageW, ShowWindow, SetForegroundWindow};
+use winapi::um::winuser::{GetAsyncKeyState, IsDialogMessageW, GetAncestor, TranslateMessage, DispatchMessageW};
+use winapi::um::winuser::{SW_HIDE, VK_ESCAPE, MSG, GA_ROOT};
+
+use std::rc::Rc;
 use std::cell::RefCell;
 
 use crate::client;
@@ -79,7 +83,7 @@ pub struct App {
     #[nwg_events(OnButtonClick: [App::connect])]
     connect_btn: nwg::Button,
 
-    data: RefCell<client::Client>,
+    data: Rc<RefCell<client::Client>>,
 }
 
 impl App {
@@ -103,20 +107,11 @@ impl App {
         //self.listview.insert_column("Status"); //TODO
         self.listview.set_headers_enabled(true);
 
-        let hwnd = self.listview.handle.hwnd().unwrap();
-        unsafe {
-            SendMessageW(hwnd, LVM_SETCOLUMNWIDTH, 0, 120 as isize);
-            SendMessageW(hwnd, LVM_SETCOLUMNWIDTH, 1, 120 as isize);
-            SendMessageW(hwnd, LVM_SETCOLUMNWIDTH, 2, 150 as isize);
-            //SendMessageW(hwnd, LVM_SETCOLUMNWIDTH, 3, 80 as isize);
-        }
-
-        /*
         self.listview.set_column_width(0, 120);
         self.listview.set_column_width(1, 120);
         self.listview.set_column_width(2, 150);
-        self.listview.set_column_width(3, 80);
-        */
+        //self.listview.set_column_width(3, 80);
+
         let mut data = self.data.borrow_mut();
 
         let mut row = 0;
@@ -154,6 +149,8 @@ impl App {
         self.layout.add_child((0, 0), (100, 100), &self.listview);
         self.layout.add_child((0, 100), (0, 0), &self.options_btn);
         self.layout.add_child((100, 100), (0, 0), &self.connect_btn);
+
+        data.handle = self.window.handle;
     }
 
     fn size(&self) {
@@ -218,12 +215,32 @@ impl App {
     }
 }
 
+fn dispatch_events(data: Rc<RefCell<client::Client>>) {
+    unsafe {
+        let mut msg: MSG = mem::zeroed();
+        while GetMessageW(&mut msg, ptr::null_mut(), 0, 0) != 0 {
+            if IsDialogMessageW(GetAncestor(msg.hwnd, GA_ROOT), &mut msg) == 0 {
+                TranslateMessage(&msg);
+                DispatchMessageW(&msg);
+            }
+
+            if GetAsyncKeyState(VK_ESCAPE) != 0 {
+                let data = data.borrow();
+                let handle = data.handle;
+                let hwnd = handle.hwnd().unwrap();
+                ShowWindow(hwnd, SW_HIDE);
+            }
+        }
+    }
+}
 
 pub fn open() {
     let data = client::Client::new();
-    let app = App{ data: RefCell::new(data), ..Default::default() };
+    let data = Rc::new(RefCell::new(data));
+    let data_msg = data.clone();
+    let app = App{ data: data, ..Default::default() };
     let _appui = App::build_ui(app).expect("Failed to build UI");
 
-    nwg::dispatch_thread_events();
+    dispatch_events(data_msg);
 }
 
