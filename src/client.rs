@@ -80,11 +80,7 @@ impl Client {
 }
 
 fn serve(ssconfig: ss::config::Config, notify: Arc<Notify>) -> io::Result<()> {
-    let mut builder = if cfg!(feature = "single-threaded") {
-        Builder::new_current_thread()
-    } else {
-        Builder::new_multi_thread()
-    };
+    let mut builder = Builder::new_multi_thread();
 
     let runtime = builder.enable_all().build().expect("create tokio Runtime");
     runtime.block_on(async move {
