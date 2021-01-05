@@ -1,6 +1,7 @@
 {
   "select": 1,
-  "autostart": 1,
+  "visible": true,
+  "autostart": true,
   "local_addr": "127.0.0.1:1081",
   "servers": [
     {

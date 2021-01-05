@@ -1,5 +1,8 @@
 
 use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use anyhow::{Context, Result};
 
@@ -17,15 +20,21 @@ pub struct Server {
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Config {
     pub select: usize,
-    pub autostart: usize,
+    pub autostart: bool,
+    pub visible: bool,
     pub local_addr: String,
     pub servers: Vec<Server>,
 }
 
 impl Config {
     pub fn load() -> Result<Config> {
-        let mut filename = utils::exe_path();
-        filename.push("russ.json");
+        let filename = if Path::new("russ.json").exists() {
+            PathBuf::from("russ.json")
+        } else {
+            let mut file = utils::exe_path();
+            file.push("russ.json");
+            file
+        };
 
         let str = fs::read_to_string(filename).context("unable to open config file to read")?;
         let config: Config = serde_json::from_str(&str).context("unable to decode config file")?;

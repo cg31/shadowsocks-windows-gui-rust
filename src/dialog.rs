@@ -138,12 +138,12 @@ impl App {
         self.listview.update_item(index, nwg::InsertListViewItem { image: Some(1), ..Default::default() });
 
         self.options_menu_start.set_enabled(true);
-        if data.config.autostart != 0 {
-            self.options_menu_start.set_checked(true);
-            let _ = utils::autostart(true);
-        } else {
-            self.options_menu_start.set_checked(false);
-            let _ = utils::autostart(false);
+        let start = data.config.autostart;
+        self.options_menu_start.set_checked(start);
+        let _ = utils::autostart(start);
+
+        if data.config.visible {
+            self.open();
         }
 
         self.layout.add_child((0, 0), (100, 100), &self.listview);
@@ -180,15 +180,10 @@ impl App {
         let mut data = self.data.borrow_mut();
 
         // flip state
-        if self.options_menu_start.checked() {
-            self.options_menu_start.set_checked(false);
-            let _ = utils::autostart(false);
-            data.config.autostart = 0;
-        } else {
-            self.options_menu_start.set_checked(true);
-            let _ = utils::autostart(true);
-            data.config.autostart = 1;
-        }
+        let start = !self.options_menu_start.checked();
+        self.options_menu_start.set_checked(start);
+        let _ = utils::autostart(start);
+        data.config.autostart = start;
     }
 
     fn show_menu(&self) {
@@ -197,7 +192,7 @@ impl App {
     }
 
     fn open(&self) {
-        let hwnd = self.listview.handle.hwnd().unwrap();
+        let hwnd = self.window.handle.hwnd().unwrap();
         self.window.set_visible(true);
         self.window.set_focus();
         unsafe { SetForegroundWindow(hwnd); }
