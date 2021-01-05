@@ -3,6 +3,8 @@ use std::fs;
 use serde::{Deserialize, Serialize};
 use anyhow::{Context, Result};
 
+use crate::utils;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Server {
     pub name: String,
@@ -22,14 +24,18 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Config> {
-        let filename = "russ.json";
+        let mut filename = utils::exe_path();
+        filename.push("russ.json");
+
         let str = fs::read_to_string(filename).context("unable to open config file to read")?;
         let config: Config = serde_json::from_str(&str).context("unable to decode config file")?;
         Ok(config)
     }
 
     pub fn save(cfg: &Config) -> Result<()> {
-        let filename = "russ.json";
+        let mut filename = utils::exe_path();
+        filename.push("russ.json");
+
         let str = serde_json::to_string_pretty(&cfg).context("unable to open config file to write")?;
         fs::write(filename, str).context("unable to write config file")?;
         Ok(())

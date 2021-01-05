@@ -4,6 +4,8 @@ use std::io;
 use std::thread;
 use std::sync::Arc;
 
+use log::error;
+
 use futures::future::{self, Either};
 
 use tokio::{self, runtime::Builder};
@@ -29,7 +31,10 @@ impl Client {
     pub fn new() -> Client {
         let cfg = match config::Config::load() {
             Ok(cfg) => cfg,
-            _ => config::Config::default()
+            _ => {
+                error!("Can't find config file");
+                config::Config::default()
+            }
         };
 
         let data = Client {
@@ -43,6 +48,10 @@ impl Client {
     }
 
     pub fn connect(&mut self, index: usize) {
+        if self.config.servers.len() == 0 {
+            return;
+        }
+
         self.notify.notify_one();
 
         if let Some(th) = self.th.take() {

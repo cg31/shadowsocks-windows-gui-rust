@@ -26,7 +26,7 @@ const SS_PNG: &[u8] = include_bytes!("../res/ssw128.png");
 
 #[derive(Default, NwgUi)]
 pub struct App {
-    #[nwg_control(size: (530, 350), position: (300, 300), title: "russ")]
+    #[nwg_control(flags: "MAIN_WINDOW", size: (530, 350), position: (300, 300), title: "russ")]
     #[nwg_events(OnInit: [App::init], OnResize: [App::size], OnWindowClose: [App::close], OnWindowMinimize: [App::close])]
     window: nwg::Window,
 
@@ -238,6 +238,7 @@ pub fn open() {
     let data = client::Client::new();
     let data = Rc::new(RefCell::new(data));
     let data_msg = data.clone();
+
     let app = App{ data: data, ..Default::default() };
     let _appui = App::build_ui(app).expect("Failed to build UI");
 

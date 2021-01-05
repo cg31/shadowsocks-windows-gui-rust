@@ -2,12 +2,18 @@
 use native_windows_gui as nwg;
 
 use std::path::Path;
+use std::path::PathBuf;
 
 use winreg;
 use winreg::enums::*;
 use winreg::RegKey;
 
 use anyhow::{Context, Result};
+
+use log::LevelFilter;
+use log4rs::append::file::FileAppender;
+use log4rs::encode::pattern::PatternEncoder;
+use log4rs::config::{Appender, Config, Root};
 
 
 pub fn string_to_str(s: String) -> &'static str {
@@ -35,6 +41,12 @@ pub fn _load_embed_icon(bin: &str) -> nwg::Icon {
     icon
 }
 
+pub fn exe_path() -> PathBuf {
+    let mut p = std::env::current_exe().unwrap();
+    p.pop();
+    p
+}
+
 // add program to startup
 pub fn autostart(enable: bool) -> Result<()> {
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
@@ -48,4 +60,18 @@ pub fn autostart(enable: bool) -> Result<()> {
         key.delete_value("Russ").context("unable to delete regkey")?;
     }
     Ok(())
+}
+
+pub fn init_log<P: AsRef<Path>>(file_path: P) {
+    let logfile = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
+        .build(file_path).unwrap();
+
+    let config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .build(Root::builder()
+                   .appender("logfile")
+                   .build(LevelFilter::Info)).unwrap();
+
+    log4rs::init_config(config).unwrap();
 }

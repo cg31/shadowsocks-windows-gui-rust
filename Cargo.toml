@@ -23,6 +23,7 @@ serde_derive = "1.0.118"
 
 anyhow = "1.0.37"
 log = "0.4.11"
+log4rs = "1.0"
 
 futures = "0.3.8"
 tokio = { version = "1.0.1", features = ["full"] }
@@ -31,5 +32,9 @@ shadowsocks = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", bra
 shadowsocks-service = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", branch = "master", features = ["local"] }
 
 [build-dependencies]
-embed-resource = "1.4.1"
-winapi-build = "0.1.1"
+winapi = "0.3.9"
+winres = "0.1.11"
+
+[package.metadata.winres]
+OriginalFilename = "russ.exe"
+LegalCopyright = "Open Source MIT"
