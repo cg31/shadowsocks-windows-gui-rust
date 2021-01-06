@@ -7,9 +7,10 @@ use nwd::NwgUi;
 
 use std::{mem, ptr};
 
-use winapi::um::winuser::{GetMessageW, ShowWindow, SetForegroundWindow};
+use winapi::ctypes::c_int;
+use winapi::um::winuser::{GetMessageW, ShowWindow, SetForegroundWindow, TrackPopupMenu};
 use winapi::um::winuser::{GetAsyncKeyState, IsDialogMessageW, GetAncestor, TranslateMessage, DispatchMessageW};
-use winapi::um::winuser::{SW_HIDE, VK_ESCAPE, MSG, GA_ROOT};
+use winapi::um::winuser::{SW_HIDE, TPM_BOTTOMALIGN, VK_ESCAPE, MSG, GA_ROOT};
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -21,19 +22,19 @@ use crate::utils;
 
 const OK_PNG: &[u8] = include_bytes!("../res/StatusOK_16x.png");
 const CLOUD_PNG: &[u8] = include_bytes!("../res/Cloud_16x.png");
-const SS_PNG: &[u8] = include_bytes!("../res/ssw128.png");
+const SS_ICO: &[u8] = include_bytes!("../res/shadowsocks.ico");
 
 
 #[derive(Default, NwgUi)]
 pub struct App {
-    #[nwg_control(flags: "MAIN_WINDOW", size: (530, 350), position: (300, 300), title: "russ")]
+    #[nwg_control(icon: Some(&data.icon), flags: "MAIN_WINDOW", size: (530, 350), position: (300, 300), title: "russ")]
     #[nwg_events(OnInit: [App::init], OnResize: [App::size], OnWindowClose: [App::close], OnWindowMinimize: [App::close])]
     window: nwg::Window,
 
-    #[nwg_resource(source_bin: Some(SS_PNG))]
-    tray_icon: nwg::Icon,
+    #[nwg_resource(source_bin: Some(SS_ICO))]
+    icon: nwg::Icon,
 
-    #[nwg_control(icon: Some(&data.tray_icon), tip: Some("russ"))]
+    #[nwg_control(icon: Some(&data.icon), tip: Some("russ"))]
     #[nwg_events(MousePressLeftDown: [App::open], MousePressRightDown: [App::show_menu], OnContextMenu: [App::show_menu])]
     tray: nwg::TrayNotification,
 
@@ -54,6 +55,10 @@ pub struct App {
     #[nwg_control(parent: options_menu, text: "Start on boot")]
     #[nwg_events(OnMenuItemSelected: [App::autostart])]
     options_menu_start: nwg::MenuItem,
+
+    #[nwg_control(parent: options_menu, text: "Start minimized")]
+    #[nwg_events(OnMenuItemSelected: [App::start_minimized])]
+    options_menu_start_minimized: nwg::MenuItem,
 
     // TODO
     //#[nwg_control(parent: options_menu, text: "Exit to tray")]
@@ -89,9 +94,6 @@ pub struct App {
 impl App {
     fn init(&self) {
         let icons = &self.view_icons;
-
-        let icon = utils::load_bitmap(SS_PNG).copy_as_icon();
-        self.tray.set_icon(&icon);
 
         self.listview.set_list_style(nwg::ListViewStyle::Detailed);
 
@@ -138,13 +140,16 @@ impl App {
         self.listview.update_item(index, nwg::InsertListViewItem { image: Some(1), ..Default::default() });
 
         self.options_menu_start.set_enabled(true);
+
         let start = data.config.autostart;
         self.options_menu_start.set_checked(start);
         let _ = utils::autostart(start);
 
-        if data.config.visible {
+        self.options_menu_start_minimized.set_enabled(true);
+        if !data.config.startminimized {
             self.open();
         }
+        self.options_menu_start_minimized.set_checked(data.config.startminimized);
 
         self.layout.add_child((0, 0), (100, 100), &self.listview);
         self.layout.add_child((0, 100), (0, 0), &self.options_btn);
@@ -159,7 +164,13 @@ impl App {
 
     fn options(&self) {
         let (x, y) = nwg::GlobalCursor::position();
-        self.options_menu.popup(x, y);
+        //self.options_menu.popup(x, y);
+        unsafe {
+            //let hwnd_win = self.window.handle.hwnd().unwrap();
+            //let hwnd = self.options_menu.handle.hmenu().unwrap();
+            let (parent, hmenu) = self.options_menu.handle.pop_hmenu().unwrap();
+            TrackPopupMenu(hmenu, TPM_BOTTOMALIGN, x as c_int, y as c_int, 0, parent, ptr::null());
+        }
     }
 
     fn connect(&self) {
@@ -184,6 +195,13 @@ impl App {
         self.options_menu_start.set_checked(start);
         let _ = utils::autostart(start);
         data.config.autostart = start;
+    }
+
+    fn start_minimized(&self) {
+        let mut data = self.data.borrow_mut();
+        let start_minimized = self.options_menu_start.checked();
+        data.config.startminimized = start_minimized;
+        self.options_menu_start_minimized.set_checked(start_minimized);
     }
 
     fn show_menu(&self) {

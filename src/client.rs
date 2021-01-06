@@ -79,6 +79,7 @@ impl Client {
 
         ssconfig.server.push(sc);
         ssconfig.local_addr = Some(local_addr.parse().unwrap());
+        ssconfig.local_protocol = ss::config::ProtocolType::Socks;
 
         self.th = Some(thread::spawn(move || {
             if let Err(_e) = serve(ssconfig, notify) {
