@@ -2,7 +2,7 @@
   "select": 1,
   "autostart": true,
   "startminimized": false,
-  "local_addr": "127.0.0.1:1081",
+  "local_addr": "127.0.0.1:1083",
   "servers": [
     {
       "name": "server-1",

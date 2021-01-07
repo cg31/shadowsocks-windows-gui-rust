@@ -7,10 +7,9 @@ use nwd::NwgUi;
 
 use std::{mem, ptr};
 
-use winapi::ctypes::c_int;
-use winapi::um::winuser::{GetMessageW, ShowWindow, SetForegroundWindow, TrackPopupMenu};
+use winapi::um::winuser::{GetMessageW, ShowWindow, SetForegroundWindow};
 use winapi::um::winuser::{GetAsyncKeyState, IsDialogMessageW, GetAncestor, TranslateMessage, DispatchMessageW};
-use winapi::um::winuser::{SW_HIDE, TPM_BOTTOMALIGN, VK_ESCAPE, MSG, GA_ROOT};
+use winapi::um::winuser::{SW_HIDE, VK_ESCAPE, MSG, GA_ROOT};
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -164,13 +163,7 @@ impl App {
 
     fn options(&self) {
         let (x, y) = nwg::GlobalCursor::position();
-        //self.options_menu.popup(x, y);
-        unsafe {
-            //let hwnd_win = self.window.handle.hwnd().unwrap();
-            //let hwnd = self.options_menu.handle.hmenu().unwrap();
-            let (parent, hmenu) = self.options_menu.handle.pop_hmenu().unwrap();
-            TrackPopupMenu(hmenu, TPM_BOTTOMALIGN, x as c_int, y as c_int, 0, parent, ptr::null());
-        }
+        self.options_menu.popup_with_flags(x, y, nwg::PopupMenuFlags::ALIGN_BOTTOM | nwg::PopupMenuFlags::ALIGN_H_CENTER);
     }
 
     fn connect(&self) {
