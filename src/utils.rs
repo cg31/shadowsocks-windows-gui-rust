@@ -16,10 +16,6 @@ use log4rs::encode::pattern::PatternEncoder;
 use log4rs::config::{Appender, Config, Root};
 
 
-pub fn string_to_str(s: String) -> &'static str {
-    Box::leak(s.into_boxed_str())
-}
-
 pub fn load_bitmap(bin: &[u8]) -> nwg::Bitmap {
     let mut bitmap = nwg::Bitmap::default();
     let res = nwg::Bitmap::builder().source_bin(Some(bin)).strict(true).build(&mut bitmap);
@@ -42,9 +38,12 @@ pub fn _load_embed_icon(bin: &str) -> nwg::Icon {
 }
 
 pub fn exe_path() -> PathBuf {
-    let mut p = std::env::current_exe().unwrap();
-    p.pop();
-    p
+    if let Ok(mut p) = std::env::current_exe() {
+        p.pop();
+        p
+    } else {
+        PathBuf::new()
+    }
 }
 
 // add program to startup
@@ -62,16 +61,16 @@ pub fn autostart(enable: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn init_log<P: AsRef<Path>>(file_path: P) {
+pub fn init_log<P: AsRef<Path>>(file_path: P) -> Result<()> {
     let logfile = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d(%Y-%m-%d %H:%M:%S)} {l} - {m}\n")))
-        .build(file_path).unwrap();
+        .build(file_path)?;
 
     let config = Config::builder()
         .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(Root::builder()
-                   .appender("logfile")
-                   .build(LevelFilter::Info)).unwrap();
+        .build(Root::builder().appender("logfile").build(LevelFilter::Info))?;
 
-    log4rs::init_config(config).unwrap();
+    let _ = log4rs::init_config(config);
+
+    Ok(())
 }

@@ -3,6 +3,7 @@
 use native_windows_gui as nwg;
 
 use log::info;
+use log::error;
 
 mod client;
 mod config;
@@ -14,18 +15,21 @@ fn main() {
     let mut p = utils::exe_path();
     p.push("russ.log");
 
-    utils::init_log(p);
+    let _ = utils::init_log(p);
 
     info!("russ starts up");
 
-    nwg::init().expect("Failed to init Native Windows GUI");
+    if let Err(_) = nwg::init() {
+        error!("Failed to init Native Windows GUI");
+        return;
+    }
+
     let mut font = nwg::Font::default();
 
-    nwg::Font::builder()
+    let _ = nwg::Font::builder()
         .family("Segoe UI")
         .size(16)
-        .build(&mut font)
-        .expect("Failed to build font");
+        .build(&mut font);
 
     nwg::Font::set_global_default(Some(font));
 

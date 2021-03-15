@@ -134,7 +134,8 @@ impl App {
 
         let index = data.config.select;
 
-        data.connect(index);
+        let _= data.connect(index);
+
         self.listview.select_item(index, true);
         self.listview.update_item(index, nwg::InsertListViewItem { image: Some(1), ..Default::default() });
 
@@ -172,7 +173,7 @@ impl App {
 
             if data.config.select != index {
                 self.listview.update_item(data.config.select, nwg::InsertListViewItem { image: Some(0), ..Default::default() });
-                data.connect(index);
+                let _= data.connect(index);
                 self.listview.update_item(index, nwg::InsertListViewItem { image: Some(1), ..Default::default() });
             }
         }
@@ -203,10 +204,11 @@ impl App {
     }
 
     fn open(&self) {
-        let hwnd = self.window.handle.hwnd().unwrap();
-        self.window.set_visible(true);
-        self.window.set_focus();
-        unsafe { SetForegroundWindow(hwnd); }
+        if let Some(hwnd) = self.window.handle.hwnd() {
+            self.window.set_visible(true);
+            self.window.set_focus();
+            unsafe { SetForegroundWindow(hwnd); }
+        }
     }
 
     fn close(&self) {
@@ -214,6 +216,7 @@ impl App {
     }
 
     fn exit(&self) {
+        // save config, in case the index has changed
         let data = self.data.borrow_mut();
         let _ = config::Config::save(&data.config);
 
@@ -233,8 +236,9 @@ fn dispatch_events(data: Rc<RefCell<client::Client>>) {
             if GetAsyncKeyState(VK_ESCAPE) != 0 {
                 let data = data.borrow();
                 let handle = data.handle;
-                let hwnd = handle.hwnd().unwrap();
-                ShowWindow(hwnd, SW_HIDE);
+                if let Some(hwnd) = handle.hwnd() {
+                    ShowWindow(hwnd, SW_HIDE);
+                }
             }
         }
     }
