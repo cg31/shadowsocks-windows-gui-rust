@@ -1,7 +1,7 @@
 [package]
 name = "russ"
 version = "0.1.1"
-edition = "2018"
+edition = "2021"
 description = "Shadowsocks GUI"
 license = "MIT"
 build = "build.rs"
@@ -11,29 +11,35 @@ name = "russ"
 path = "src/main.rs"
 
 [dependencies]
-native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui.git", branch = "master", features = [ "all" ] }
-native-windows-derive = { git = "https://github.com/gabdube/native-windows-gui.git", branch = "master" }
+#native-windows-gui = { git = "https://github.com/gabdube/native-windows-gui.git", branch = "master", features = [ "all" ] }
+#native-windows-derive = { git = "https://github.com/gabdube/native-windows-gui.git", branch = "master" }
+
+native-windows-gui = "1.0.0"
+native-windows-derive = "1.0.0"
 
 winapi = { version = "0.3.9", features = ["winuser", "wingdi"] }
-winreg = "0.8.0"
+winreg = "0.10.1"
 
-serde = { version = "1.0.118", features = ["derive"] }
-serde_json = "1.0.61"
-serde_derive = "1.0.118"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+serde_derive = "1.0.136"
 
-anyhow = "1.0.37"
-log = "0.4.11"
-log4rs = "1.0"
+anyhow = "1.0.56"
+log = "0.4.16"
+log4rs = "1.0.0"
 
-futures = "0.3.8"
-tokio = { version = "1.0.1", features = ["full"] }
+futures = "0.3.21"
+tokio = { version = "1.17.0", features = ["full"] }
 
-shadowsocks = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", branch = "master" }
-shadowsocks-service = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", branch = "master", features = ["local"] }
+#shadowsocks = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", branch = "master" }
+#shadowsocks-service = { git = "https://github.com/shadowsocks/shadowsocks-rust.git", branch = "master", features = ["local"] }
+
+shadowsocks = { version = "1.12.5" }
+shadowsocks-service = { version = "1.12.5", features = ["local"] }
 
 [build-dependencies]
 winapi = "0.3.9"
-winres = "0.1.11"
+winres = "0.1.12"
 
 [package.metadata.winres]
 OriginalFilename = "russ.exe"

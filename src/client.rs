@@ -84,7 +84,7 @@ impl Client {
             Ok(cipher) => cipher,
             Err(_e) => anyhow::bail!("Wrong local address")
         };
-        let lc = ss::config::LocalConfig::new(laddr, ss::config::ProtocolType::Socks);
+        let lc = ss::config::LocalConfig::new_with_addr(laddr, ss::config::ProtocolType::Socks);
 
         ssconfig.local.push(lc);
 
