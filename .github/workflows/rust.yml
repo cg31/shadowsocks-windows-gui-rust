@@ -16,5 +16,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Build
       run: cargo build --release
+
+    - name: Prepare build artifacts
+      run: |
+          mkdir upload
+          copy russ.json upload
+          copy target/release/russ.exe upload
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+          name: russ-latest
+          path: upload
