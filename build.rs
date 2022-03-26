@@ -5,14 +5,14 @@ fn main() {
     let mut res = winres::WindowsResource::new();
     res.set_icon("res/shadowsocks.ico");
     res.set_language(0x0409); // LANG_ENGLISH
-  
+
 	res.set_manifest(r#"
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
         <security>
             <requestedPrivileges>
-                <requestedExecutionLevel level="requireAdministrator" uiAccess="false"/>
+                <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
             </requestedPrivileges>
         </security>
     </trustInfo>
@@ -20,7 +20,7 @@ fn main() {
     <assemblyIdentity
         version="1.2.3.4"
         processorArchitecture="*"
-        name="CompanyName.ProductName.YourApplication"
+        name="Free.Software"
         type="win32"
     />
     <description>Your application description here.</description>
@@ -36,7 +36,7 @@ fn main() {
             />
         </dependentAssembly>
     </dependency>
-</assembly>	
+</assembly>
 	"#);
 
     match res.compile() {
