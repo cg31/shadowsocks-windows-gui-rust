@@ -6,7 +6,7 @@ fn main() {
     res.set_icon("res/shadowsocks.ico");
     res.set_language(0x0409); // LANG_ENGLISH
 
-	res.set_manifest(r#"
+    res.set_manifest(r#"
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
     <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
@@ -37,7 +37,7 @@ fn main() {
         </dependentAssembly>
     </dependency>
 </assembly>
-	"#);
+    "#);
 
     match res.compile() {
         Err(e) => {
