@@ -1,13 +1,12 @@
-
-use std::thread;
 use std::sync::Arc;
+use std::thread;
 
 use log::error;
 
 use futures::future::{self, Either};
 
-use tokio::{self, runtime::Builder};
 use tokio::sync::Notify;
+use tokio::{self, runtime::Builder};
 
 use shadowsocks_service as ss;
 
@@ -16,7 +15,6 @@ use native_windows_gui as nwg;
 use anyhow::Result;
 
 use crate::config;
-
 
 #[derive(Default)]
 pub struct Client {
@@ -48,7 +46,7 @@ impl Client {
 
     pub fn connect(&mut self, index: usize) -> Result<()> {
         if self.config.servers.len() == 0 {
-            return Err(anyhow::format_err!("Empty servers"))
+            return Err(anyhow::format_err!("Empty servers"));
         }
 
         self.notify.notify_one();
@@ -68,23 +66,31 @@ impl Client {
 
         let svr_addr = match server.server.parse::<ss::shadowsocks::config::ServerAddr>() {
             Ok(addr) => addr,
-            Err(_) => anyhow::bail!("Wrong server address")
+            Err(_) => anyhow::bail!("Wrong server address"),
         };
 
         let cipher = match server.method.parse() {
             Ok(cipher) => cipher,
-            Err(_) => anyhow::bail!("Wrong method")
+            Err(_) => anyhow::bail!("Wrong method"),
         };
 
-        let sc = ss::shadowsocks::ServerConfig::new(svr_addr, server.password.clone(), cipher);
+        let sc = ss::config::ServerInstanceConfig::with_server_config(
+            ss::shadowsocks::ServerConfig::new(svr_addr, server.password.clone(), cipher),
+        );
 
         ssconfig.server.push(sc);
 
-        let laddr = match self.config.local_addr.parse::<ss::shadowsocks::config::ServerAddr>() {
+        let laddr = match self
+            .config
+            .local_addr
+            .parse::<ss::shadowsocks::config::ServerAddr>()
+        {
             Ok(cipher) => cipher,
-            Err(_e) => anyhow::bail!("Wrong local address")
+            Err(_e) => anyhow::bail!("Wrong local address"),
         };
-        let lc = ss::config::LocalConfig::new_with_addr(laddr, ss::config::ProtocolType::Socks);
+        let lc = ss::config::LocalInstanceConfig::with_local_config(
+            ss::config::LocalConfig::new_with_addr(laddr, ss::config::ProtocolType::Socks),
+        );
 
         ssconfig.local.push(lc);
 
@@ -127,4 +133,3 @@ async fn wait_notify(notify: Arc<Notify>) -> Result<()> {
     notify.notified().await;
     Ok(())
 }
-
